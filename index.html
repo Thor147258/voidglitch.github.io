@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WARFRAME - RARITY WEIGHTS AND “RANDOM” NUMBER GENERATION</title>
+    <link rel="shortcut icon" href="http://destiny.trade/VoiDLabs_Transparent_Background.png">
+    <style type="text/css">
+        /* Typical Body Content */
+        
+        body {
+            background: black url("http://destiny.trade/bg.png") repeat;
+            color: #CCC;
+            font-family: arial;
+            font-size: 1.1em;
+            font-weight: 400;
+            line-height: 2;
+            margin: 0 auto;
+            max-width: 47.5em;
+        }
+        
+        #content {
+            position: absolute;
+            left: 20%;
+            top: 32px;
+            width: 60%;
+        }
+        
+        h3 {
+            text-indent: -32px;
+        }
+        
+        h1 {
+            font-family: arial;
+            font-size: 3.157em;
+            line-height: 1.2;
+        }
+        
+        p {
+            margin-bottom: 1.1em;
+            margin-top: 0;
+            padding-top: 0rem;
+        }
+        
+        li {
+            margin-left: 1rem;
+        }
+        
+        a {
+            background: 0 0;
+            color: #2EBFA6;
+            cursor: pointer;
+            text-decoration: none;
+            text-decoration: underline;
+        }
+        /* Geese */
+        
+        .goose {
+            filter: invert(100%);
+            z-index: -1;
+            position: absolute;
+            top: 32px;
+        }
+        
+        #goose-left {
+            left: calc(20% - 128px);
+        }
+        
+        #goose-right {
+            right: calc(20% - 128px);
+            transform: scaleX(-1);
+        }
+        
+        .goose-head {
+            background: url("https://cdn.discordapp.com/emojis/332048666758217729.png");
+            position: absolute;
+            width: 128px;
+            height: 128px;
+        }
+        
+        .goose-body {
+            background: url("https://cdn.discordapp.com/emojis/332048882831851522.png") repeat;
+            position: absolute;
+            width: 128px;
+            top: 128px;
+        }
+        /* Text Aligns */
+        
+        .center-align {
+            text-align: center;
+        }
+        
+        .left-align {
+            text-align: left;
+            margin-left: 3.9%
+        }
+        
+        .right-align {
+            text-align: right;
+        }
+        
+        .footer {
+            position: fixed;
+            bottom: 8px;
+        }
+        
+        .copyright {
+            font-style: normal;
+            right: 8px;
+        }
+        /* Table Formatting */
+        
+        table {
+            font-family: arial;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: center;
+            padding: 8px;
+        }
+        
+        th {
+            background-color: #182837;
+        }
+        
+        tr:nth-of-type(even) {
+            background-color: #3b5363;
+        }
+        
+        tr:nth-of-type(odd) {
+            background-color: #2c3e50;
+        }
+        /* Codebox Formatting */
+        
+        .codebox {
+            border: 1px solid black;
+            background-color: #EEEEFF;
+            overflow: auto;
+            padding: 0;
+        }
+        
+        .codebox code {
+            color: #000;
+            background: rgba(0, 0, 0, 0);
+        }
+        
+        code {
+            background-color: #f9f2f4;
+            border-radius: 8px;
+            color: #8e44ad;
+            font-family: monospace;
+            font-size: 1em;
+            padding: 2px 4px;
+        }
+    </style>
+    <!-- Minimized JQuery For Simplicity -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <!-- Goose Controller -->
+    <script type="text/javascript">
+        $(window).ready(function() {
+            var geeseBodies = $(".goose-body");
+
+            gooseNeckHeight = 0;
+            resizeTask = 0;
+            var calculateNeckHeight = function() {
+                var size = window.innerHeight - geeseBodies.position().top + $(window).scrollTop() + 512;
+                gooseNeckHeight = Math.max(gooseNeckHeight, size);
+                geeseBodies.css({
+                    height: gooseNeckHeight + "px"
+                });
+                if (resizeTask) {
+                    clearTimeout(resizeTask);
+                }
+
+                resizeTask = setTimeout(function() {
+                    geeseBodies.animate({
+                        height: size + "px"
+                    });
+                }, 1000);
+            };
+
+            calculateNeckHeight();
+            $(window).scroll(calculateNeckHeight);
+            $(window).resize(calculateNeckHeight);
+        });
+    </script>
+</head>
+
+<body>
+    <!-- Left Goose -->
+    <div class="goose" id="goose-left">
+        <div class="goose-head"></div>
+        <div class="goose-body"></div>
+    </div>
+    <!-- Right Goose -->
+    <div class="goose" id="goose-right">
+        <div class="goose-head"></div>
+        <div class="goose-body"></div>
+    </div>
+    <div id="content">
+        <h2 class="center-align"> By Devove, FineNerds, &amp; VoiD_Glitch</h2>
+        <h4 class="center-align">WARFRAME - RARITY WEIGHTS AND &#8220;RANDOM&#8221; NUMBER GENERATION</h4>
+
+        <h3 class="left-align">INTRODUCTION</h3>
+        <p>
+            Random Number Generation is the generation of a sequence of numbers or symbols that cannot be reasonably predicted better than by a random chance, usually through a random-number generator (RNG). Random Number Generation is an essential factor to in-game items as the drop chance of an item can determine its market value and influence a player's means of obtaining it (as in, farming for or purchasing it). There is no way to generate random numbers deterministically, but algorithms do exist that give the appearance of a random sequence. The algorithm <em>Warframe</em> makes use of is <a href="http://www.eternallyconfuzzled.com/tuts/algorithms/jsw_tut_rand.aspx"><em>Donald Knuth</em>'s version of a Linear Congruential Generator (LCG)</a>, scaling off of Rarity Weights that influence the drop chances of items in <code>DropTables</code> and <code>MissionDecks</code> files. Note that the formula <code>Xn = (aXn-1 + c) mod m</code> only applies to missions that involve getting rewards over time, such as Defense and Survival. This concept is explained by <a href="https://www.reddit.com/user/Pwnatron">Pwnatron</a> in <a href="https://www.reddit.com/r/Warframe/comments/1fl18h/defense_mission_rewards_and_scaling/">this</a> thread, starting with “The order of these items is important in a way.” In the cases of missions like Capture and Exterminate, they simply use the process that will be explained later in this article.
+        </p>
+
+        <h3 class="left-align">RARITY WEIGHTS</h3>
+        <p>
+            <em>Warframe</em> makes use of four (4) Rarity Weights in its Random Number Generation algorithm. These weights are uniform across <code>DropTables</code> and <code>MissionDecks</code>, with the exception of <a href="https://n8k6e2y6.ssl.hwcdn.net/repos/hnfvc0o3jnfvc873njb03enrf56.html#sortieRewards"><code>/Lotus/Types/Game/MissionDecks/SortieRewards</code></a>, which uses <code>FixedWeights</code> (Weights that Digital Extremes manually assigns).
+        </p>
+        <div class="center-align">
+            <table>
+                <tr>
+                    <th>RARITY</th>
+                    <th>WEIGHT</th>
+                    <th>PERCENTAGE</th>
+                </tr>
+                <tr>
+                    <td>COMMON</td>
+                    <td>0.755</td>
+                    <td>75.50%</td>
+                </tr>
+                <tr>
+                    <td>UNCOMMON</td>
+                    <td>0.22</td>
+                    <td>22.00%</td>
+                </tr>
+                <tr>
+                    <td>RARE</td>
+                    <td>0.02</td>
+                    <td>2.00%</td>
+                </tr>
+                <tr>
+                    <td>LEGENDARY</td>
+                    <td>0.005</td>
+                    <td>0.50%</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="codebox center-align">
+            <code>0.755 + 0.22 + 0.02 + 0.05 = 1</code>
+        </div>
+
+        <h3 class="left-align">FORMULAE</h3>
+        <div class="codebox left-align">
+            <code>
+                    &nbsp;&nbsp;&nbsp;COMMON DROP CHANCE (PER ITEM) = &nbsp;&nbsp;&nbsp;BASE COMMON DROP CHANCE / NUMBER OF [COMMON] ITEMS 
+                </code>
+            <br>
+            <code>
+                    &nbsp;UNCOMMON DROP CHANCE (PER ITEM) = &nbsp;BASE UNCOMMON DROP CHANCE / NUMBER OF [UNCOMMON] ITEMS</code>
+            <br>
+            <code>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RARE DROP CHANCE (PER ITEM) = &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BASE RARE DROP CHANCE / NUMBER OF [RARE] ITEMS
+                </code>
+            <br>
+            <code>
+                    LEGENDARY DROP CHANCE (PER ITEM) = BASE LEGENDARY DROP CHANCE / NUMBER OF [LEGENDARY] ITEMS
+                </code>
+        </div>
+        <h3 class="left-align">PROCEDURE (EXAMPLE)</h3>
+        <p class="center-align">DATA SELECTION: 8 COMMON, 6 UNCOMMON, 4 RARE, 2 LEGENDARY</p>
+        <div class="codebox left-align">
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;COMMON: 0.755 / 8 = 0.094375 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 9.4375 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 9.44%</code>
+            <br>
+            <code>&nbsp;&nbsp;UNCOMMON: &nbsp;0.22 / 6 = 0.0366666666666667 = 3.66666666667 = 3.67%</code>
+            <br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RARE: &nbsp;0.02 / 4 = 0.005 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 0.5 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 0.50%</code>
+            <br>
+            <code>&nbsp;LEGENDARY: 0.005 / 2 = 0.0025 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 0.25 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 0.25%</code>
+            <br>
+        </div>
+        <div class="codebox left-align">
+            <code>&nbsp;&nbsp;&nbsp;COMMON: 9.4375 * 8 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 75.5</code>
+            <br>
+            <code>&nbsp;UNCOMMON: 3.66666666667 * 6 = 22</code>
+            <br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RARE:&nbsp; 0.5 * 4 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 2</code>
+            <br>
+            <code>LEGENDARY: 0.25 * 2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 0.5</code>
+            <br>
+        </div>
+        <h3 class="left-align">NORMALIZATION</h3>
+        <p>Normalization occurs when one or more of the Rarity Weights are not present in a <code>DropTable</code> or <code>MissionDeck</code>. Normalization has many meanings, but in this case it refers to the division of constants that are added up so values fall between zero (0) and one (1) within different data sets.</p>
+        <h3 class="left-align">NORMALIZATION PROCEDURE (EXAMPLE)</h3>
+        <p class="center-align">DATA SELECTION: 1 COMMON, 1 UNCOMMON, 1 RARE, 0 LEGENDARY</p>
+        <div class="codebox left-align">
+            <code>&nbsp;&nbsp;COMMON: 0.755 / (0.755 + 0.22 + 0.02) = 0.7587939698492462 = 75.87939698492462 = 75.88%</code>
+            <br>
+            <code>UNCOMMON: &nbsp;0.22  / (0.755 + 0.22 + 0.02) = 0.221105527638191  &nbsp;= 22.1105527638191  &nbsp;= 22.11%</code>
+            <br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;RARE: &nbsp;0.02  / (0.755 + 0.22 + 0.02) = 0.0201005025125628 = 2.010050251256281 = 2.01%</code>
+        </div>
+        <div class="codebox left-align">
+            <code>75.87939698492462 + 22.1105527638191 + 2.010050251256281 = 100</code>
+        </div>
+        <h3 class="left-align">ATTENUATION</h3>
+        <p>Attenuation is a variable exclusive to <code>DropTables</code>. The Boolean <code>OverrideLevelAdjustedBiasAtten</code> determines if Attenuation is present in a <code>DropTable</code> or not. Attenuation is defined as “the reduction of the force, effect, or value of something.” This means that as the Attenuation value increases, the drop chance of an item should decrease. However, because of how minor its set value (<code>0.5</code>) is (from one of the Boolean's secondary variables, <code>RareAttenMax</code>), and that it impacts <code>DropTables</code> globally instead of individual items, it is impossible to accurately determine if it has a noticeable impact on items at all.</p>
+        <h3 class="left-align">BIAS</h3>
+        <p>Bias is a variable exclusive to <code>DropTables</code>. Bias can be applied to items within <code>DropTables</code> but is not global across any. Bias is defined as “a feature of a statistical technique or of its results whereby the expected value of the results differs from the true underlying quantitative parameter being estimated.” This means that the sole purpose of Bias is to unequally weigh items within <code>DropTables</code> (through a positive (+) or negative (-) value change), even if said items have identical Rarity Weights. In <em>Warframe</em>, Bias is a variable that negatively impacts the drop chance of an item. The more Bias an item has, the lower its drop chance is. Additionally, because Bias scales from the Rarity Weight that the item it is impacting is assigned to, items with Rarity Weights that hold more weight than others will still tend to drop more often, depending on the amount of Bias that is present. <a href="https://docs.google.com/spreadsheets/d/1wI4c7KJdOKYy6QEZl2h84MFxYHB2Jjx0ibuO3fTtSms/edit?usp=sharing">I had individuals help me confirm this theory</a>.</p>
+        <h3 class="left-align">REWARD SEEDS</h3>
+        <p><code>rewardSeed</code> is a variable exclusive to <code>MissionDecks</code>. It is a 64-bit integer that determines the <code>missionReward</code> players receive at the end of a mission. It is granted to you at the start of the mission, and remains with you until its completion. <code>rewardSeeds</code> are given to the host, and members of the host’s group receive the <code>sessionId</code> in order to participate in the same session. You will only receive a <code>rewardSeed</code> when your client needs to distribute it to players in a group (as the host). This means that you will receive a <code>rewardSeed</code> if you begin a Public, Friends Only, or Invite Only session, but if you begin a Solo session, you will not be given a <code>rewardSeed</code>. Despite the <code>SRand</code> variable (the seeding for the random number generator (a pseudo-random integer between 0 and RAND_MAX)) being different for each player, each player will always receive the same <code>missionReward</code> as the host, because of their identical <code>sessionIds</code>.</p>
+        <h3 class="left-align">ADDITIONAL RESOURCES</h3>
+        <p>Use this <a href="https://ghostbin.com/paste/np2wd">Seed Randomization Generator</a> to generate text simulations of an integer seeded by an SRand variable based on time. Use this <a href="https://ghostbin.com/paste/wh2sr">Weighted Random Number Generator</a> to generate text simulations of Weighted Random Number Generation, based on two hundred (200) instances. Initial values are set to imitate the <em>Warframe</em> Random Number Generation algorithm. <em>VoiDLabs Discord Guild</em> can be found <a href="https://discord.gg/5MTTZaJ">here</a>.</p>
+        <div class="footer copyright">
+            &copy;
+            <script type="text/javascript">
+                document.write(new Date().getFullYear())
+            </script>
+            VoiDLabs. All rights reserved.
+        </div>
+        <div class="footer copyright">
+            &copy;
+            <script type="text/javascript">
+                document.write(new Date().getFullYear())
+            </script>
+            VoiDLabs. All rights reserved.
+        </div>
+</body>
+
+</html>
